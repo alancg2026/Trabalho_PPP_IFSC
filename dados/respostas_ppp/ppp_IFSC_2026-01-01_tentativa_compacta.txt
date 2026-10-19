@@ -1,0 +1,7 @@
+{
+  "status": "OK",
+  "link": "https://www.ibge.gov.br/ppp/processados_ppp/alanguimaraesc@gmail.com_IFSC00BRA_R_20260010000_01D_15S_MO.crx.gz_LIB_20261013151831.zip",
+  "resumo": {
+    "": ""
+  }
+}

@@ -1,0 +1,52 @@
+[
+    {
+        "codigoEstacao": "94052",
+        "tipoEstacao": "G",
+        "tema": "GPS",
+        "nomeEstacao": "94052",
+        "codigoEstacaoMaterializada": "94052",
+        "inscricaoChapa": "",
+        "dataVisita": "03/11/2015",
+        "situacao": "BOM",
+        "descricaoEstacao": "Pino de centragem forçada, padrão IBGE, engastado no topo da coluna quadrangular da estrutura do prédio, medindo 0,30 m de lado e 14,7 m de altura.",
+        "latitude": -27.5944332614,
+        "longitude": -48.5420833864,
+        "latitudeGMS": " 27º 35' 39,95974\"  S",
+        "longitudeGMS": " 48º 32' 31,50019\" W",
+        "sigmaLatitude": "0,002",
+        "sigmaLongitude": "0,002",
+        "fonteCoordenada": "GPS Geodésico",
+        "dataMedicaoCoordenada": "03/11/2015",
+        "dataCalculoCoordenada": "25/11/2015",
+        "sistemaReferenciaCoordenada": "SIRGAS2000",
+        "altitudeGeometrica": "26,473",
+        "sigmaAltitudeGeometrica": "0,009",
+        "fonteAltitudeGeometrica": "GPS Geodésico",
+        "altitudeOrtometrica": "",
+        "altitudeNormal": "",
+        "fonteAltitude": "",
+        "dataMedicaoAltitude": "",
+        "dataCalculoAltitude": "",
+        "datumAltitude": "",
+        "sigmaAltitude": "",
+        "numeroGeopotencial": "",
+        "valorGravidade": "",
+        "datumGravidade": "",
+        "dataMedicaoGravidade": "",
+        "dataCalculoGravidade": "",
+        "idAjusteRN": "",
+        "notaAjusteRN": "",
+        "localizacao": "Sobre o prédio do Departamento Acadêmico de Construção Civil (DACC) do IFSC - Instituto Federal de Santa Catarina -  Av. Mauro Ramos, 950, Centro, Florianópolis/SC.",
+        "itinerario": "",
+        "observacao": "",
+        "tipoLocal": "ES",
+        "municipio": {
+            "nomeMunicipio": "Florianópolis",
+            "geocodigo": "4205407",
+            "uf": {
+                "sigla": "SC",
+                "nomeUF": "Santa Catarina"
+            }
+        }
+    }
+]

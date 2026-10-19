@@ -1,0 +1,31 @@
+{
+  "inicio_local": "2026-10-13T16:12:59-03:00",
+  "estacao": "IFSC",
+  "data": "2026-01-01",
+  "dia_do_ano": 1,
+  "arquivo_local": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\rinex_convertidos\\IFSC00BRA_R_20260010000_01D_15S_MO.zip",
+  "tamanho_bytes": 4298389,
+  "sha256": "5e655f00fc27fc069b976481602ee87c2c69d4283248d2a5505c2fbfed47d554",
+  "membro_zip": "IFSC00BRA_R_20260010000_01D_15S_MO.crx",
+  "nome_multipart": "IFSC00BRA_R_20260010000_01D_15S_MO.zip",
+  "campos_formulario": {
+    "tipo-levantamento": "estatico",
+    "modelo-antena": "TRM159900.00    NONE",
+    "altura-antena": "0.0080",
+    "marco-ibge": "SAT94052",
+    "email": "[redigido]",
+    "autorizacao-uso": "true"
+  },
+  "arquivo_resposta_bruta": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_zip_resposta_bruta_20261013T161259-0300.txt",
+  "estado": "upload_aceito_download_bloqueado_cloudflare",
+  "status_http": 200,
+  "bytes_resposta": 194,
+  "resposta_bruta": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_zip_resposta_bruta_20261013T161259-0300.txt",
+  "resposta_json": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_zip_resposta_20261013T161259-0300.json",
+  "status_api": "OK",
+  "resumo_vazio": true,
+  "link_resultado": "https://www.ibge.gov.br/ppp/processados_ppp/alanguimaraesc@gmail.com_IFSC00BRA_R_20260010000_01D_15S_MO.zip_LIB_20261013160501.zip",
+  "status_download_http": 403,
+  "resposta_download": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_resultado_http_20261013T161309-0300.bin",
+  "bytes_resposta_download": 5862
+}

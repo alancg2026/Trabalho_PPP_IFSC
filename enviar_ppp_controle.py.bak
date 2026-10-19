@@ -1,0 +1,239 @@
+import json
+import subprocess
+from pathlib import Path
+
+import requests
+
+from configuracao import CODIGO_BDG, ESTACAO
+
+
+URL_PPP = "https://servicodados.ibge.gov.br/api/v1/ppp"
+
+PASTA_PROJETO = Path(__file__).resolve().parent
+PASTA_RINEX = PASTA_PROJETO / "dados" / "rinex"
+PASTA_RESPOSTAS = PASTA_PROJETO / "dados" / "respostas_ppp"
+
+CRX2RNX = PASTA_PROJETO / "ferramentas" / "crx2rnx"
+
+PASTA_RESPOSTAS.mkdir(parents=True, exist_ok=True)
+
+
+def localizar_rinex_controle():
+    """Localiza o RINEX de 01/01/2026, dia 001."""
+
+    arquivos = list(PASTA_RINEX.glob("*001.gz"))
+
+    if len(arquivos) == 0:
+        raise FileNotFoundError(
+            "Não foi encontrado o RINEX do dia 001."
+        )
+
+    if len(arquivos) > 1:
+        raise RuntimeError(
+            "Foi encontrado mais de um arquivo para o dia 001."
+        )
+
+    return arquivos[0]
+
+
+def ler_cabecalho(caminho_rinex):
+    """
+    Descompacta temporariamente o cabeçalho do RINEX
+    e lê estação, modelo e altura da antena.
+    """
+
+    comando = (
+        'gzip -dc "$1" | '
+        '"$2" - | '
+        'sed -n "1,/END OF HEADER/p"'
+    )
+
+    resultado = subprocess.run(
+        [
+            "bash",
+            "-c",
+            comando,
+            "_",
+            str(caminho_rinex),
+            str(CRX2RNX),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    cabecalho = resultado.stdout
+
+    if "END OF HEADER" not in cabecalho:
+        raise RuntimeError(
+            "Não foi possível ler o cabeçalho do RINEX."
+        )
+
+    marcador = None
+    modelo_antena = None
+    altura_antena = None
+
+    for linha in cabecalho.splitlines():
+        if "MARKER NAME" in linha:
+            marcador = linha[:60].strip()
+
+        elif "ANT # / TYPE" in linha:
+            # O modelo está entre as colunas 21 e 40.
+            modelo_antena = linha[20:40].strip()
+
+        elif "ANTENNA: DELTA H/E/N" in linha:
+            altura_antena = float(linha[:14].strip())
+
+    if not marcador:
+        raise ValueError("MARKER NAME não encontrado.")
+
+    if not modelo_antena:
+        raise ValueError("Modelo da antena não encontrado.")
+
+    if altura_antena is None:
+        raise ValueError("Altura da antena não encontrada.")
+
+    return marcador, modelo_antena, altura_antena
+
+
+def enviar_controle(email):
+    """Envia apenas o RINEX de controle ao IBGE-PPP."""
+
+    caminho_rinex = localizar_rinex_controle()
+
+    caminho_json = (
+        PASTA_RESPOSTAS
+        / "ppp_IFSC_2026-01-01_resposta.json"
+    )
+
+    caminho_bruto = (
+        PASTA_RESPOSTAS
+        / "ppp_IFSC_2026-01-01_resposta_bruta.txt"
+    )
+
+    # Evita consumir outro processamento por acidente.
+    if caminho_json.exists():
+        print("A resposta de controle já existe:")
+        print(caminho_json)
+        print("O arquivo não será enviado novamente.")
+        return
+
+    marcador, modelo_antena, altura_antena = ler_cabecalho(
+        caminho_rinex
+    )
+
+    print("\nDADOS EXTRAÍDOS DO RINEX")
+    print(f"Marcador: {marcador}")
+    print(f"Modelo da antena: {modelo_antena}")
+    print(f"Altura da antena: {altura_antena:.4f} m")
+    print(f"Marco IBGE: SAT{CODIGO_BDG}")
+    print(f"Arquivo: {caminho_rinex.name}")
+
+    confirmacao = input(
+        "\nDigite ENVIAR para realizar o processamento: "
+    ).strip()
+
+    if confirmacao != "ENVIAR":
+        print("Envio cancelado.")
+        return
+
+    dados_formulario = {
+        "tipo-levantamento": "estatico",
+        "modelo-antena": modelo_antena,
+        "altura-antena": f"{altura_antena:.4f}",
+        "marco-ibge": f"SAT{CODIGO_BDG}",
+        "email": email,
+        "autorizacao-uso": "true",
+    }
+
+    nome_limpo = f"{ESTACAO}_2026_001.crx.gz"
+
+    print("\nEnviando ao IBGE-PPP...")
+    print("Aguarde. O processamento pode demorar.")
+
+    try:
+        with caminho_rinex.open("rb") as arquivo:
+            arquivos = {
+                "arquivo": (
+                    nome_limpo,
+                    arquivo,
+                    "application/gzip",
+                )
+            }
+
+            resposta = requests.post(
+                URL_PPP,
+                data=dados_formulario,
+                files=arquivos,
+                timeout=600,
+            )
+
+        # Salva a resposta antes de tentar interpretá-la.
+        caminho_bruto.write_text(
+            resposta.text,
+            encoding="utf-8",
+        )
+
+        print(f"Status HTTP: {resposta.status_code}")
+        print(f"Resposta bruta salva em: {caminho_bruto}")
+
+        resposta.raise_for_status()
+
+        try:
+            dados_json = resposta.json()
+
+        except ValueError:
+            print(
+                "O servidor não devolveu JSON. "
+                "Confira a resposta bruta."
+            )
+            return
+
+        caminho_json.write_text(
+            json.dumps(
+                dados_json,
+                ensure_ascii=False,
+                indent=4,
+            ),
+            encoding="utf-8",
+        )
+
+        print("\nEnvio realizado com sucesso!")
+        print(f"JSON salvo em: {caminho_json}")
+        print("\nResposta recebida:")
+        print(
+            json.dumps(
+                dados_json,
+                ensure_ascii=False,
+                indent=4,
+            )
+        )
+
+    except requests.exceptions.Timeout:
+        print(
+            "A conexão atingiu o tempo limite. "
+            "Verifique a pasta antes de tentar novamente."
+        )
+
+    except requests.exceptions.ConnectionError:
+        print("Erro de conexão com o IBGE.")
+
+    except requests.exceptions.HTTPError as erro:
+        print(f"Erro HTTP: {erro}")
+        print("Leia o arquivo de resposta bruta.")
+
+    except requests.exceptions.RequestException as erro:
+        print(f"Erro durante o envio: {erro}")
+
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("PROCESSAMENTO DE CONTROLE NO IBGE-PPP")
+    print("Estação IFSC - 01/01/2026 - dia inteiro")
+    print("=" * 60)
+
+    email = input("Digite seu e-mail: ").strip()
+
+    if "@" not in email:
+        print("E-mail inválido.")
+    else:
+        enviar_controle(email)

@@ -1,0 +1,3 @@
+hatanaka
+pandas
+requests

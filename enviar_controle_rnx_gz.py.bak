@@ -1,0 +1,220 @@
+import json
+import time
+from pathlib import Path
+
+import requests
+
+
+# Endereço da API do IBGE-PPP
+URL_PPP = "https://servicodados.ibge.gov.br/api/v1/ppp"
+
+# Localização das pastas do projeto
+PASTA_PROJETO = Path(__file__).resolve().parent
+PASTA_RINEX = PASTA_PROJETO / "dados" / "rinex"
+PASTA_RESPOSTAS = PASTA_PROJETO / "dados" / "respostas_ppp"
+
+PASTA_RESPOSTAS.mkdir(parents=True, exist_ok=True)
+
+
+# Informações verificadas no cabeçalho do RINEX
+MARCADOR = "IFSC"
+MODELO_ANTENA = "TRM159900.00    NONE"
+ALTURA_ANTENA = 0.0080
+MARCO_IBGE = "SAT94052"
+
+
+def localizar_arquivo_controle():
+    """Localiza o RINEX compacto de 01/01/2026 — dia 001."""
+
+    arquivos = list(PASTA_RINEX.glob("*001*.gz"))
+
+    if len(arquivos) == 0:
+        raise FileNotFoundError(
+            "Não foi encontrado o arquivo RINEX do dia 001."
+        )
+
+    if len(arquivos) > 1:
+        print("Foram encontrados vários arquivos:")
+        for arquivo in arquivos:
+            print(arquivo.name)
+
+        raise RuntimeError(
+            "Existe mais de um arquivo correspondente ao dia 001."
+        )
+
+    return arquivos[0]
+
+
+def enviar_arquivo(caminho_rinex, email):
+    """Envia o arquivo compacto ao serviço IBGE-PPP."""
+
+    dados_formulario = {
+        "tipo-levantamento": "estatico",
+        "modelo-antena": MODELO_ANTENA,
+        "altura-antena": f"{ALTURA_ANTENA:.4f}",
+        "marco-ibge": MARCO_IBGE,
+        "email": email,
+        "autorizacao-uso": "true",
+    }
+
+    # Envia um nome limpo, sem os caracteres problemáticos do download
+    nome_envio = "IFSC00BRA_R_20260010000_01D_15S_MO.crx.gz"
+
+    for tentativa in range(1, 4):
+        print(f"\nTentativa de envio {tentativa}/3...")
+
+        try:
+            with caminho_rinex.open("rb") as arquivo:
+                arquivos_envio = {
+                    "arquivo": (
+                        nome_envio,
+                        arquivo,
+                        "application/gzip",
+                    )
+                }
+
+                resposta = requests.post(
+                    URL_PPP,
+                    data=dados_formulario,
+                    files=arquivos_envio,
+                    timeout=600,
+                )
+
+            # Salva a resposta completa antes de interpretá-la
+            caminho_bruto = (
+                PASTA_RESPOSTAS
+                / "ppp_IFSC_2026-01-01_tentativa_compacta.txt"
+            )
+
+            caminho_bruto.write_text(
+                resposta.text,
+                encoding="utf-8",
+            )
+
+            print(f"Status HTTP: {resposta.status_code}")
+            print(f"Resposta salva em: {caminho_bruto}")
+
+            resposta.raise_for_status()
+
+            try:
+                dados_json = resposta.json()
+
+            except ValueError:
+                print("O servidor não devolveu uma resposta JSON.")
+                print("Confira o arquivo de resposta bruta.")
+                return
+
+            caminho_json = (
+                PASTA_RESPOSTAS
+                / "ppp_IFSC_2026-01-01_tentativa_compacta.json"
+            )
+
+            caminho_json.write_text(
+                json.dumps(
+                    dados_json,
+                    ensure_ascii=False,
+                    indent=4,
+                ),
+                encoding="utf-8",
+            )
+
+            print("\nResposta recebida do IBGE:")
+            print(
+                json.dumps(
+                    dados_json,
+                    ensure_ascii=False,
+                    indent=4,
+                )
+            )
+
+            if dados_json.get("status") == "OK":
+                print("\nARQUIVO RECEBIDO PELO IBGE-PPP!")
+                print(f"Resultado salvo em: {caminho_json}")
+
+                link = dados_json.get("link")
+
+                if link:
+                    print(f"\nLink informado pelo IBGE:\n{link}")
+                else:
+                    print(
+                        "\nO IBGE recebeu o arquivo, mas ainda não "
+                        "informou um link de resultado."
+                    )
+            else:
+                print(
+                    "\nO servidor respondeu, mas não confirmou "
+                    "o processamento."
+                )
+
+            return
+
+        except requests.exceptions.ConnectionError as erro:
+            print("\nA conexão foi interrompida durante o envio.")
+            print(f"Detalhe: {erro}")
+
+            if tentativa < 3:
+                print("Aguardando 5 segundos para tentar novamente...")
+                time.sleep(5)
+            else:
+                print(
+                    "\nNão foi possível enviar após três tentativas."
+                )
+
+        except requests.exceptions.Timeout:
+            print("\nO servidor demorou demais para responder.")
+
+            if tentativa < 3:
+                print("Aguardando 5 segundos para tentar novamente...")
+                time.sleep(5)
+            else:
+                print(
+                    "\nNão foi possível enviar após três tentativas."
+                )
+
+        except requests.exceptions.HTTPError as erro:
+            print(f"\nErro HTTP retornado pelo IBGE: {erro}")
+            return
+
+        except requests.exceptions.RequestException as erro:
+            print(f"\nErro durante o envio: {erro}")
+            return
+
+
+def main():
+    print("=" * 60)
+    print("REENVIO DO CONTROLE AO IBGE-PPP")
+    print("Estação IFSC — 01/01/2026")
+    print("=" * 60)
+
+    try:
+        caminho_rinex = localizar_arquivo_controle()
+
+    except (FileNotFoundError, RuntimeError) as erro:
+        print(f"\nErro: {erro}")
+        return
+
+    print(f"\nArquivo compacto: {caminho_rinex.name}")
+    print(f"Marcador: {MARCADOR}")
+    print(f"Antena: {MODELO_ANTENA}")
+    print(f"Altura: {ALTURA_ANTENA:.4f} m")
+    print(f"Marco: {MARCO_IBGE}")
+
+    email = input("\nDigite seu e-mail: ").strip()
+
+    if "@" not in email:
+        print("E-mail inválido.")
+        return
+
+    confirmacao = input(
+        "Digite ENVIAR para confirmar: "
+    ).strip()
+
+    if confirmacao != "ENVIAR":
+        print("Envio cancelado.")
+        return
+
+    enviar_arquivo(caminho_rinex, email)
+
+
+if __name__ == "__main__":
+    main()

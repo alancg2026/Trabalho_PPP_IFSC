@@ -1,0 +1,63 @@
+RESUMO DO RESULTADO IBGE-PPP — ESTAÇÃO IFSC
+
+Pasta analisada: D:\Geoprocessamento\Alan\Programação Aplicada ao Geoprocessamento\Trabalho_PPP_IFSC_FINAL\Trabalho_PPP_IFSC\dados\resultados_ppp\2026-01-01
+Solução estática: coordenadas finais lidas do arquivo .txt do IBGE-PPP.
+O arquivo .pos contém uma série temporal; seus valores de época não substituem a coordenada final estática do .txt.
+
+Estação/marco: IFSC
+Arquivo RINEX: ifsc0010.26o
+Processado em: 2026-10-13 16:59:24
+Início da observação: 2026-01-01 00:00:00
+Fim da observação: 2026-01-01 23:59:45
+Duração entre primeira e última época (s): 86385
+Modo de processamento: ESTATICO
+Antena: TRM159900.00    NONE
+Altura da antena (m): 0.008
+Intervalo de observação (s): 15
+Frequência: L3
+Tipo de observação: CODIGO&FASE
+Órbita: FINAL
+Referencial e época: SIRGAS2000, época 2000.4
+Época do referencial (ano): 2000.4
+Latitude (graus, minutos, segundos): -27 35 39,9594
+Latitude (graus decimais; convertida do DMS): -27.59443317
+Longitude (graus, minutos, segundos): -48 32 31,5013
+Longitude (graus decimais; convertida do DMS): -48.54208369
+Altitude geométrica/elipsoidal (m): 26.5
+Sigma 95% da latitude (m): 0.001
+Sigma 95% da longitude (m): 0.002
+Sigma 95% da altitude (m): 0.004
+UTM norte (m): 6945311.595
+UTM leste (m): 742610.071
+Meridiano central UTM (graus): -51
+Modelo de altitude: hgeoHNOR_IMBITUBA
+Fator de correção do modelo (m): 0.72
+Incerteza do modelo de altitude (m): 0.09
+Altitude normal HNOR (m; não confundir com ortométrica): 25.78
+Ondulação geoidal (m): Não informado nos arquivos de resultado.
+Altitude ortométrica HORT (m): Não informado nos arquivos de resultado.
+Coordenada cartesiana X (m): Não informado nos arquivos de resultado.
+Coordenada cartesiana Y (m): Não informado nos arquivos de resultado.
+Coordenada cartesiana Z (m): Não informado nos arquivos de resultado.
+Épocas válidas no arquivo POS: 5760
+Primeira época no POS: 2026-01-01 00:00:00
+Última época no POS: 2026-01-01 23:59:45
+Intervalo mediano entre épocas POS (s): 15
+Menor intervalo entre épocas POS (s): 15
+Maior intervalo entre épocas POS (s): 15
+GDOP médio no POS: 2.861111111
+Código usado em L1 (SUM): P1|C1
+Código usado em L2 (SUM): P2|C2
+Modelo de antena (SUM): TRM159900.00    NONE
+Transformação de referencial (SUM): ITRF (IGb20)->SIRGAS2000  NA EPOCA: 2026.0
+
+Observações sobre disponibilidade:
+- X, Y e Z cartesianos não aparecem nos arquivos analisados.
+- HORT e ondulação geoidal não foram informados; HNOR é altitude normal do modelo hgeoHNOR_IMBITUBA e não foi rotulada como altitude ortométrica.
+- Conversões de latitude/longitude para graus decimais foram calculadas a partir dos DMS informados pelo PPP.
+
+Arquivos de texto lidos: .txt, .sum e .pos.
+
+Avisos:
+- Campo ONDGEO não localizado no arquivo .txt.
+- Campo HORT não localizado no arquivo .txt.

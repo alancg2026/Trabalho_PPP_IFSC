@@ -1,0 +1,7 @@
+{
+  "status": "OK",
+  "link": "https://www.ibge.gov.br/ppp/processados_ppp/alan.cg05@aluno.ifsc.edu.br_IFSC_2026_001.crx.gz_LIB_20261013130402.zip",
+  "resumo": {
+    "": ""
+  }
+}

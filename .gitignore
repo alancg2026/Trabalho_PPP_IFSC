@@ -1,0 +1,16 @@
+.venv/
+.venv_windows/
+__pycache__/
+*.pyc
+*.zip
+*.rnx
+*.rnx.gz
+*.26o
+entrega/
+.DS_Store
+.vscode/
+Thumbs.db
+
+dados/rinex/
+dados/estatisticas_rinex/
+ferramentas/

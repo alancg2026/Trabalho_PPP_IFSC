@@ -1,0 +1,28 @@
+{
+  "inicio_local": "2026-10-13T16:01:31-03:00",
+  "estacao": "IFSC",
+  "data": "2026-01-01",
+  "dia_do_ano": 1,
+  "arquivo_local": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\rinex\\IFSC_2026_001.crx.gz",
+  "nome_multipart": "IFSC00BRA_R_20260010000_01D_15S_MO.crx.gz",
+  "tamanho_bytes": 4308705,
+  "formato": "Compact RINEX/Hatanaka dentro de GZIP",
+  "campos_formulario": {
+    "tipo-levantamento": "estatico",
+    "modelo-antena": "TRM159900.00",
+    "altura-antena": "0.0080",
+    "marco-ibge": "SAT94052",
+    "email": "[redigido]",
+    "autorizacao-uso": "true"
+  },
+  "arquivo_resposta_bruta": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_resposta_bruta_20261013T160131-0300.txt",
+  "estado": "upload_aceito_resultado_nao_confirmado",
+  "status_http": 200,
+  "resposta_bruta": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_resposta_bruta_20261013T160131-0300.txt",
+  "bytes_resposta": 197,
+  "resposta_json": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_resposta_20261013T160131-0300.json",
+  "status_api": "OK",
+  "resumo_vazio": true,
+  "status_download_http": 403,
+  "resposta_download": "D:\\Geoprocessamento\\Alan\\Programação Aplicada ao Geoprocessamento\\Trabalho_PPP_IFSC_FINAL\\Trabalho_PPP_IFSC\\dados\\respostas_ppp\\ppp_IFSC_2026-01-01_resultado_HTTP_403_20261013T160131-0300.txt"
+}

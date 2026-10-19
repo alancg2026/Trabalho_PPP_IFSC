@@ -1,0 +1,203 @@
+import gzip
+import json
+import shutil
+import time
+from pathlib import Path
+
+import requests
+
+
+URL_PPP = "https://servicodados.ibge.gov.br/api/v1/ppp"
+
+PASTA_PROJETO = Path(__file__).resolve().parent
+PASTA_CONVERTIDOS = PASTA_PROJETO / "dados" / "rinex_convertidos"
+PASTA_RESPOSTAS = PASTA_PROJETO / "dados" / "respostas_ppp"
+
+PASTA_RESPOSTAS.mkdir(parents=True, exist_ok=True)
+
+MARCADOR = "IFSC"
+MODELO_ANTENA = "TRM159900.00    NONE"
+ALTURA_ANTENA = 0.0080
+MARCO_IBGE = "SAT94052"
+
+
+def localizar_rinex_normal():
+    arquivos = list(PASTA_CONVERTIDOS.glob("*001*.rnx"))
+
+    if len(arquivos) == 0:
+        raise FileNotFoundError(
+            "Não foi encontrado o RINEX convertido do dia 001."
+        )
+
+    if len(arquivos) > 1:
+        print("Foram encontrados vários arquivos:")
+        for arquivo in arquivos:
+            print(arquivo.name)
+
+        raise RuntimeError(
+            "Existe mais de um RINEX convertido do dia 001."
+        )
+
+    return arquivos[0]
+
+
+def compactar_rinex(caminho_rinex):
+    caminho_gzip = PASTA_CONVERTIDOS / "IFSC_2026_001.rnx.gz"
+
+    print("\nCompactando o RINEX normal...")
+    print("Isso pode demorar alguns instantes.")
+
+    with caminho_rinex.open("rb") as origem:
+        with gzip.open(caminho_gzip, "wb", compresslevel=9) as destino:
+            shutil.copyfileobj(origem, destino)
+
+    tamanho_mb = caminho_gzip.stat().st_size / (1024 * 1024)
+
+    print(f"Arquivo criado: {caminho_gzip}")
+    print(f"Tamanho compactado: {tamanho_mb:.2f} MB")
+
+    return caminho_gzip
+
+
+def enviar_ao_ppp(caminho_gzip, email):
+    dados_formulario = {
+        "tipo-levantamento": "estatico",
+        "modelo-antena": MODELO_ANTENA,
+        "altura-antena": f"{ALTURA_ANTENA:.4f}",
+        "marco-ibge": MARCO_IBGE,
+        "email": email,
+        "autorizacao-uso": "true",
+    }
+
+    for tentativa in range(1, 4):
+        print(f"\nTentativa {tentativa}/3...")
+        print("Enviando RINEX normal compactado ao IBGE-PPP...")
+
+        try:
+            with caminho_gzip.open("rb") as arquivo:
+                arquivos_envio = {
+                    "arquivo": (
+                        "IFSC_2026_001.rnx.gz",
+                        arquivo,
+                        "application/gzip",
+                    )
+                }
+
+                resposta = requests.post(
+                    URL_PPP,
+                    data=dados_formulario,
+                    files=arquivos_envio,
+                    timeout=600,
+                )
+
+            caminho_bruto = (
+                PASTA_RESPOSTAS
+                / "ppp_IFSC_2026-01-01_rnx_gz_resposta.txt"
+            )
+
+            caminho_bruto.write_text(
+                resposta.text,
+                encoding="utf-8",
+            )
+
+            print(f"\nStatus HTTP: {resposta.status_code}")
+            print(f"Resposta bruta salva em: {caminho_bruto}")
+
+            resposta.raise_for_status()
+
+            try:
+                dados_json = resposta.json()
+
+            except ValueError:
+                print("O servidor não devolveu uma resposta JSON.")
+                return
+
+            caminho_json = (
+                PASTA_RESPOSTAS
+                / "ppp_IFSC_2026-01-01_rnx_gz_resposta.json"
+            )
+
+            caminho_json.write_text(
+                json.dumps(
+                    dados_json,
+                    ensure_ascii=False,
+                    indent=4,
+                ),
+                encoding="utf-8",
+            )
+
+            print("\nRESPOSTA DO IBGE:")
+            print(
+                json.dumps(
+                    dados_json,
+                    ensure_ascii=False,
+                    indent=4,
+                )
+            )
+
+            if dados_json.get("status") == "OK":
+                print("\nRINEX NORMAL COMPACTADO RECEBIDO PELO IBGE!")
+
+                link = dados_json.get("link")
+
+                if link:
+                    print(f"\nLink do processamento:\n{link}")
+
+            return
+
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+        ) as erro:
+            print(f"\nA conexão foi interrompida: {erro}")
+
+            if tentativa < 3:
+                print("Tentando novamente em 5 segundos...")
+                time.sleep(5)
+            else:
+                print("As três tentativas falharam.")
+
+        except requests.exceptions.RequestException as erro:
+            print(f"\nErro durante o envio: {erro}")
+            return
+
+
+def main():
+    print("=" * 60)
+    print("ENVIO DO RINEX NORMAL COMPACTADO")
+    print("Estação IFSC — controle de 01/01/2026")
+    print("=" * 60)
+
+    try:
+        caminho_rinex = localizar_rinex_normal()
+        caminho_gzip = compactar_rinex(caminho_rinex)
+
+    except (FileNotFoundError, RuntimeError) as erro:
+        print(f"\nErro: {erro}")
+        return
+
+    print("\nDADOS DO PROCESSAMENTO")
+    print(f"Marcador: {MARCADOR}")
+    print(f"Antena: {MODELO_ANTENA}")
+    print(f"Altura: {ALTURA_ANTENA:.4f} m")
+    print(f"Marco: {MARCO_IBGE}")
+
+    email = input("\nDigite seu e-mail: ").strip()
+
+    if "@" not in email:
+        print("E-mail inválido.")
+        return
+
+    confirmacao = input(
+        "Digite ENVIAR para confirmar: "
+    ).strip()
+
+    if confirmacao != "ENVIAR":
+        print("Envio cancelado.")
+        return
+
+    enviar_ao_ppp(caminho_gzip, email)
+
+
+if __name__ == "__main__":
+    main()
